@@ -10,6 +10,12 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Student signup and session access
+  - name: chat
+    description: Conversations with Temmy
+  - name: progress
+    description: Learning progress and gamification
 paths:
   /healthz:
     get:
@@ -24,6 +30,120 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/signup:
+    post:
+      operationId: signUp
+      tags: [auth]
+      summary: Create a student profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupInput"
+      responses:
+        "201":
+          description: Created student session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "400":
+          description: Invalid signup details
+  /auth/login:
+    post:
+      operationId: logIn
+      tags: [auth]
+      summary: Sign in with a name and PIN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Signed-in student session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "401":
+          description: Invalid sign-in details
+  /auth/logout:
+    post:
+      operationId: logOut
+      tags: [auth]
+      summary: End the current session
+      responses:
+        "204":
+          description: Signed out
+  /auth/me:
+    get:
+      operationId: getCurrentStudent
+      tags: [auth]
+      summary: Return the current student
+      responses:
+        "200":
+          description: Current student session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+        "401":
+          description: Not signed in
+  /chat/history:
+    get:
+      operationId: getChatHistory
+      tags: [chat]
+      summary: Return the current student's recent conversation
+      responses:
+        "200":
+          description: Recent messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+        "401":
+          description: Not signed in
+  /chat/message:
+    post:
+      operationId: sendChatMessage
+      tags: [chat]
+      summary: Send a message to Temmy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatMessageInput"
+      responses:
+        "201":
+          description: Saved student and Temmy messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatReply"
+        "400":
+          description: Invalid message
+        "401":
+          description: Not signed in
+  /progress:
+    get:
+      operationId: getProgress
+      tags: [progress]
+      summary: Return topics, streak, and badges
+      responses:
+        "200":
+          description: Current learning progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Progress"
+        "401":
+          description: Not signed in
 components:
   schemas:
     HealthStatus:
@@ -33,4 +153,81 @@ components:
           type: string
       required:
         - status
+    Student:
+      type: object
+      required: [id, name, ageOrClassLevel, currentStreak, longestStreak]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        ageOrClassLevel: { type: string }
+        currentStreak: { type: integer }
+        longestStreak: { type: integer }
+    SignupInput:
+      type: object
+      required: [name, ageOrClassLevel, pin]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        ageOrClassLevel: { type: string, minLength: 1, maxLength: 50 }
+        pin: { type: string, pattern: "^[0-9]{4,6}$" }
+    LoginInput:
+      type: object
+      required: [name, pin]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        pin: { type: string, pattern: "^[0-9]{4,6}$" }
+    AuthSession:
+      type: object
+      required: [student]
+      properties:
+        student: { $ref: "#/components/schemas/Student" }
+    Message:
+      type: object
+      required: [id, sender, contentType, contentText, createdAt]
+      properties:
+        id: { type: integer }
+        sender: { type: string, enum: [student, temmy] }
+        contentType: { type: string, enum: [text, voice, image] }
+        contentText: { type: string }
+        createdAt: { type: string, format: date-time }
+    ChatMessageInput:
+      type: object
+      required: [contentText]
+      properties:
+        contentText: { type: string, minLength: 1, maxLength: 4000 }
+        contentType: { type: string, enum: [text, voice, image], default: text }
+        mediaData: { type: string, maxLength: 8000000 }
+        mediaMimeType: { type: string, maxLength: 100 }
+    ChatReply:
+      type: object
+      required: [studentMessage, temmyMessage, progress]
+      properties:
+        studentMessage: { $ref: "#/components/schemas/Message" }
+        temmyMessage: { $ref: "#/components/schemas/Message" }
+        progress: { $ref: "#/components/schemas/Progress" }
+    Progress:
+      type: object
+      required: [currentStreak, longestStreak, topics, badges]
+      properties:
+        currentStreak: { type: integer }
+        longestStreak: { type: integer }
+        topics:
+          type: array
+          items: { $ref: "#/components/schemas/ProgressTopic" }
+        badges:
+          type: array
+          items: { $ref: "#/components/schemas/Badge" }
+    ProgressTopic:
+      type: object
+      required: [subject, topic, timesDiscussed]
+      properties:
+        subject: { type: string }
+        topic: { type: string }
+        timesDiscussed: { type: integer }
+        lastCoveredAt: { type: string, format: date-time }
+    Badge:
+      type: object
+      required: [badgeType, awardedAt]
+      properties:
+        badgeType: { type: string }
+        awardedAt: { type: string, format: date-time }
 

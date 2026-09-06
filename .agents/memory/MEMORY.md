@@ -1,0 +1,1 @@
+- [AI provider fallback](ai-provider-fallback.md) — keep chat usable when live Gemini access is unavailable.

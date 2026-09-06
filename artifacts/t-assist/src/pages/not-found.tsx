@@ -1,0 +1,7 @@
+import { ArrowLeft, Compass, Sparkles } from 'lucide-react';
+import { Link } from 'wouter';
+import { Mark } from '@/components/t-assist-ui';
+
+export default function NotFound() {
+  return <div className="noise min-h-[100dvh] bg-[#f7f0e4]"><header className="mx-auto flex max-w-6xl items-center px-5 py-5 md:px-8"><Mark /></header><main className="mx-auto grid max-w-6xl place-items-center px-5 pb-24 pt-20 text-center md:pt-32"><div className="animate-rise"><div className="relative mx-auto grid size-24 place-items-center rounded-[2rem] bg-primary text-primary-foreground shadow-[7px_7px_0_rgba(39,54,69,.14)]"><Compass size={42} /><span className="absolute -right-2 -top-2 grid size-8 place-items-center rounded-xl bg-accent text-foreground"><Sparkles size={15} /></span></div><p className="mt-8 font-mono text-xs uppercase tracking-[.2em] text-primary">A wrong turn</p><h1 className="mt-4 font-display text-5xl font-bold tracking-[-.07em] md:text-7xl">This page went<br /><span className="text-primary">off exploring.</span></h1><p className="mx-auto mt-6 max-w-md text-sm leading-6 text-muted-foreground">No worries. The useful bits are still right where you left them.</p><Link href="/" data-testid="link-not-found-home" className="focus-ring mt-8 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground shadow-[4px_4px_0_rgba(39,54,69,.14)]"><ArrowLeft size={16} /> Take me home</Link></div></main></div>;
+}

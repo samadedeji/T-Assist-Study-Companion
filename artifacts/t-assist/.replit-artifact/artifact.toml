@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "T-Assist"
+description = "A warm, playful AI study companion for primary and secondary students to chat with Temmy, explore any subject, and build learning momentum through progress, streaks, and badges."
+version = "1.0.0"
+id = "artifacts/t-assist"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24269
+
+[services.development]
+run = "pnpm --filter @workspace/t-assist run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/t-assist", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/t-assist/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24269"
+BASE_PATH = "/"
